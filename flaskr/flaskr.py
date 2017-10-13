@@ -1,6 +1,6 @@
 from __future__ import print_function
 import sys, os, sqlite3
-from flask import Flask, g, render_template
+from flask import Flask, g, render_template, request, redirect, flash, url_for, session
 
 # print to console
 def cprint(msg):
@@ -66,3 +66,18 @@ def close_db(error):
 def show_entries():
 	entries = query_db('select title, text from entries order by id desc')
 	return render_template('show_entries.html', entries=entries)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+	error = None
+	if request.method == 'POST':
+		if request.form['username'] != app.config['USERNAME']:
+			error = 'Invalid username'
+		elif request.form['password'] != app.config['PASSWORD']:
+			error = 'Invalid password'
+		else:
+			session['logged_in'] = True
+			flash('You were logged in')
+			return redirect(url_for('show_entries'))
+
+	return render_template('login.html', error=error)
