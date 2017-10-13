@@ -1,6 +1,6 @@
 from __future__ import print_function
-import sys, os
-from flask import Flask
+import sys, os, sqlite3
+from flask import Flask, g
 
 # print to console
 def cprint(msg):
@@ -29,6 +29,33 @@ app.config.update(dict(
 # should point to the configuration file.
 # ex: export FLASKR_SETTINGS=config.py
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+
+# Connect to a specific database
+def connect_db():
+	rv = sqlite3.connect(app.config['DATABASE'])
+	rv.row_factory = sqlite3.Row
+	return rv
+
+def get_db():
+	if not hasattr(g, 'sqlite_db'):
+		g.sqlite_db = connect_db()
+	return g.sqlite_db
+
+def init_db():
+	db = get_db()
+	with app.open_resource('schema.sql', mode='r') as f:
+		db.cursor().executescript(f.read())
+	db.commit()
+
+@app.cli.command('initdb')
+def initdb_command():
+	init_db()
+	cprint("Database has been initialized")
+
+@app.teardown_appcontext
+def close_db(error):
+	if hasattr(g, 'sqlite_db'):
+		g.sqlite_db.close()
 
 @app.route('/')
 def hello_world():
