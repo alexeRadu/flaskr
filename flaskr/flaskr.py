@@ -1,6 +1,6 @@
 from __future__ import print_function
 import sys, os, sqlite3
-from flask import Flask, g
+from flask import Flask, g, render_template
 
 # print to console
 def cprint(msg):
@@ -47,6 +47,11 @@ def init_db():
 		db.cursor().executescript(f.read())
 	db.commit()
 
+def query_db(query):
+	db = get_db()
+	return db.execute(query).fetchall()
+
+
 @app.cli.command('initdb')
 def initdb_command():
 	init_db()
@@ -58,6 +63,6 @@ def close_db(error):
 		g.sqlite_db.close()
 
 @app.route('/')
-def hello_world():
-	cprint(str(app.config))
-	return "Hello there"
+def show_entries():
+	entries = query_db('select title, text from entries order by id desc')
+	return render_template('show_entries.html', entries=entries)
