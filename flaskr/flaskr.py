@@ -10,4 +10,5 @@ app.config.from_object(__name__)
 
 @app.route('/')
 def hello_world():
+	print("Hi there boy")
 	return "Hello there"
