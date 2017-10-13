@@ -9,10 +9,15 @@ def cprint(msg):
 # create the application instance
 app = Flask(__name__)
 
-# load config from this file
+# Load config from this file.
+# This means that I can define a global variable with an all caps name and it
+# will be loaded into the config
+# ex. NAME = "Radu"
+# For a larger application the default configuration could be stored into either
+# a config.py or a config.ini file and loaded at this point.
 app.config.from_object(__name__)
 
 @app.route('/')
 def hello_world():
-	cprint("Console messsage from %s" % ("Radu"))
+	cprint(str(app.config))
 	return "Hello there"
